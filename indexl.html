@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Detective Max: Past Tense Mystery</title>
+<style>
+:root{--navy:#111827;--purple:#24364b;--gold:#f5b942;--paper:#f3dfb4;--green:#23784e;--red:#b93636}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:"Trebuchet MS",Arial,sans-serif;color:var(--navy);background:#171b25}
+#app{position:relative;width:100vw;height:100vh;overflow:hidden;background:radial-gradient(ellipse at 50% 20%,#394252 0%,#202633 45%,#11151d 100%)}
+#bg{position:absolute;inset:0;width:100%;height:100%;z-index:0}
+header{position:absolute;z-index:3;top:10px;left:12px;right:12px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.logo,.stat{background:#1c2938f2;border:2px solid #b88735;border-radius:8px;padding:8px 12px;font-weight:1000;color:#f7e7c1;box-shadow:0 4px 0 #090d13}
+.logo{font-size:clamp(14px,2vw,22px)}.stats{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}.stat{font-size:clamp(12px,1.4vw,16px)}
+button{border:0;border-radius:15px;padding:12px 16px;background:var(--purple);color:white;font:inherit;font-weight:1000;cursor:pointer;box-shadow:0 4px 0 #30246f;transition:transform .12s}
+button:active{transform:translateY(3px);box-shadow:0 1px 0 #30246f}button:focus-visible{outline:4px solid var(--gold)}
+#main{position:absolute;z-index:2;inset:75px 12px 12px;display:grid;grid-template-columns:minmax(0,1fr) minmax(230px,28%);gap:12px}
+#story{min-width:0;display:flex;flex-direction:column;gap:10px;align-items:stretch}
+#scene{flex:1;min-height:0;background:linear-gradient(135deg,#f5e6c7,#e5c995);border:5px solid #8a632c;border-radius:8px;box-shadow:0 8px 0 #090d13;padding:clamp(12px,2vw,24px);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;overflow:auto}
+.emoji{font-size:clamp(42px,8vw,88px);line-height:1.15;filter:drop-shadow(0 4px 0 #00000012)}
+h1{font-size:clamp(27px,4vw,46px);margin:5px 0;color:#172333}h2{font-size:clamp(22px,3vw,34px);margin:7px 0}
+#scene p{font-size:clamp(15px,1.9vw,21px);line-height:1.45;max-width:800px;margin:8px auto}
+#choices{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+.choice{min-height:72px;background:linear-gradient(145deg,#fff4d9,#e8d0a0);color:#182536;border:3px solid #a77a37;box-shadow:0 5px 0 #765124;font-size:clamp(14px,1.8vw,21px);text-align:left;display:flex;align-items:center;gap:10px;justify-content:flex-start}
+.choice .letter{flex:0 0 32px;width:32px;height:32px;display:grid;place-items:center;border-radius:10px;background:#5c49bd;color:white}
+.choice:hover{background:#fff0bd}.choice.correct{background:#d3ebc9;box-shadow:0 5px 0 #23784e}.choice.wrong{background:#f3c5b9;box-shadow:0 5px 0 #a43b35}
+#side{display:flex;flex-direction:column;gap:10px;min-height:0}
+.panel{background:linear-gradient(145deg,#f3e3c0,#d9b77b);border:3px solid #8a632c;border-radius:8px;padding:12px;box-shadow:0 5px 0 #090d13;min-width:0}
+.panel h3{font-size:clamp(15px,1.7vw,20px);margin:0 0 8px}
+#camera-box{position:relative;aspect-ratio:4/3;background:#101720;border-radius:8px;overflow:hidden;border:3px solid #8a632c}
+#video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1);display:block}#hand-canvas{position:absolute;inset:0;width:100%;height:100%;transform:scaleX(-1);pointer-events:none}
+#camera-status,#tip{font-size:12px;line-height:1.4;color:#4b402b;font-weight:700;margin-top:7px}
+#feedback{font-weight:1000;font-size:clamp(16px,2vw,23px);text-align:center;min-height:2.2em;color:#263a4e;margin:8px 0}
+#meter{height:12px;background:#bca77e;border-radius:4px;overflow:hidden;margin-top:7px}#fill{height:100%;width:0;background:linear-gradient(90deg,#e2bd5b,#b78122);transition:width .25s}
+#pointer{position:absolute;z-index:4;width:26px;height:26px;display:none;pointer-events:none;transform:translate(-50%,-50%);border-radius:50%;border:4px solid white;background:#ffd166;box-shadow:0 0 0 3px #5542b8}
+.overlay{position:absolute;z-index:8;inset:0;display:grid;place-items:center;padding:16px;background:#080b10cc;backdrop-filter:blur(5px)}
+.modal{width:min(680px,95vw);max-height:94vh;overflow:auto;background:linear-gradient(145deg,#f7e7c2,#dfc18a);border:5px solid #8a632c;border-radius:8px;padding:clamp(20px,4vw,40px);text-align:center;box-shadow:0 10px 0 #090d13}
+.modal h1{font-size:clamp(32px,6vw,58px)}.modal p{font-size:clamp(15px,2vw,20px);line-height:1.45}
+#start{background:#d99a25;box-shadow:0 5px 0 #805318;color:#172333;font-size:20px;padding:14px 24px}
+.small{font-size:13px!important;color:#63533a}.hide{display:none!important}
+@media(max-width:680px){#main{inset:67px 7px 7px;grid-template-columns:minmax(0,1fr) 150px;gap:7px}header{left:7px;right:7px;top:6px}.logo{padding:6px 8px}.stat{padding:6px 8px}.panel{padding:8px;border-radius:14px}#choices{gap:7px}.choice{padding:8px;min-height:62px}.choice .letter{flex-basis:26px;width:26px;height:26px}#scene{padding:10px}}
+@media(max-width:500px){#main{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto;overflow:auto}#side{display:grid;grid-template-columns: minmax(120px,42%) 1fr;align-items:start}.panel h3{font-size:14px}#camera-status,#tip{font-size:10px}#scene{min-height:380px}}
+</style>
+</head>
+<body>
+<div id="app">
+<canvas id="bg"></canvas>
+<header><div class="logo">🕵️ DETECTIVE MAX <span style="color:#e4b44f">| CASE FILE 001</span></div><div class="stats"><div class="stat">⭐ Score: <span id="score">0</span></div><div class="stat">🔎 Clues: <span id="clues">0</span>/4</div><button id="full">⛶ Fullscreen</button></div></header>
+<div id="main">
+<section id="story"><div id="scene"></div></section>
+<aside id="side">
+ <section class="panel"><h3>🖐️ Hand tracker</h3><div id="camera-box"><video id="video" autoplay playsinline muted></video><canvas id="hand-canvas"></canvas></div><div id="camera-status">Camera not started yet.</div></section>
+ <section class="panel"><h3>🧭 How to play</h3><div id="tip">Point with your index finger at an answer and hold for 0.8 seconds. You can also click an answer.</div><div id="feedback" aria-live="polite">Ready to solve the mystery?</div><strong>Case progress</strong><div id="meter"><div id="fill"></div></div></section>
+</aside></div>
+<div id="pointer"></div>
+<div id="intro" class="overlay"><div class="modal"><div class="emoji">🕵️‍♂️🔍</div><div style="display:inline-block;background:#182637;color:#f5c35e;border:2px solid #a77a37;padding:5px 14px;letter-spacing:3px;font-weight:1000">CONFIDENTIAL CASE FILE</div><h1>DETECTIVE MAX</h1><h2 style="margin-top:0">PAST TENSE MYSTERY</h2><p>🗂️ Help Detective Max solve the missing museum diamond case. Choose the action written in the <b>correct past tense</b> to follow the real clue path.</p><p>Correct grammar unlocks the next clue. Wrong answers lead to funny dead ends—with an instant grammar correction!</p><p class="small">Allow camera access when asked. Webcam tracking needs a secure browser context and internet access. If camera tracking fails, click the answers instead.</p><button id="start">▶ Start the Case</button></div></div>
+<div id="end" class="overlay hide"><div class="modal"><div class="emoji" id="end-emoji">🏆</div><h1 id="end-title">CASE SOLVED!</h1><p id="end-text">You found the diamond!</p><p style="font-size:25px;font-weight:1000">Final score: <span id="final-score">0</span> ⭐</p><button id="again">Play Again 🔄</button></div></div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+const $=id=>document.getElementById(id);
+const sceneEl=$('scene'), video=$('video'), hc=$('hand-canvas'), ctx=hc.getContext('2d'), pointer=$('pointer');
+let score=0, clues=0, current='intro', stream=null, hands=null, hoverName='', hoverAt=0, hoverLocked=false, processing=false, raf=null;
+const nodes={
+ intro:{emoji:'🕵️‍♂️',title:'The Case Begins!',text:'A diamond disappeared from the city museum last night. Detective Max found a trail of clues. Choose the sentence with the correct past tense to investigate.',choices:[{text:'Max investigate the museum.',verb:'investigate',correct:false,fix:'Max investigated the museum.',dead:'The Grammar Gremlin changed the report! “Investigate” should be “investigated” because the action happened last night.'},{text:'Max investigated the museum.',verb:'investigated',correct:true,next:'hall'}]},
+ hall:{emoji:'🏛️',title:'Clue 1: The Museum Hall',text:'A guard saw a shadow near the main hall. What did Max do next?',choices:[{text:'He goed to the hall.',correct:false,fix:'He went to the hall.',dead:'Oops! “Go” is irregular. Its past tense is “went,” not “goed.” The silly shoe clue leads nowhere!'},{text:'He went to the hall.',correct:true,next:'footprints'}]},
+ footprints:{emoji:'👣',title:'Clue 2: Mysterious Footprints',text:'Wet footprints lead away from the display case. What did the thief do?',choices:[{text:'The thief runned away.',correct:false,fix:'The thief ran away.',dead:'Dead end! “Run” has an irregular past tense: “ran.” The footprints circle back to the start!'},{text:'The thief ran away.',correct:true,next:'window'}]},
+ window:{emoji:'🪟',title:'Clue 3: The Open Window',text:'Max notices a tiny muddy handprint by the window. What did he discover?',choices:[{text:'He finded a muddy handprint.',correct:false,fix:'He found a muddy handprint.',dead:'The Mud Monster has hidden this clue! The past tense of “find” is “found,” not “finded.”'},{text:'He found a muddy handprint.',correct:true,next:'suspect'}]},
+ suspect:{emoji:'🧤',title:'Clue 4: The Suspect',text:'A muddy glove lies beside the garden gate. What did Max do with it?',choices:[{text:'He taked the glove.',correct:false,fix:'He took the glove.',dead:'A glove-shaped balloon! “Take” becomes “took” in the past tense, not “taked.” Try the real clue path.'},{text:'He took the glove.',correct:true,next:'solved'}]},
+ solved:{emoji:'💎',title:'CASE SOLVED!',text:'The muddy glove matched the gardener’s glove. The diamond was found safely in the garden shed. Max solved the mystery—and your past tense skills cracked the case!',choices:[]}
+};
+function renderNode(key){
+ current=key; const n=nodes[key]; sceneEl.innerHTML='';
+ const em=document.createElement('div');em.className='emoji';em.textContent=n.emoji;sceneEl.appendChild(em);
+ const h=document.createElement('h1');h.textContent=n.title;sceneEl.appendChild(h);
+ const p=document.createElement('p');p.textContent=n.text;sceneEl.appendChild(p);
+ if(key==='solved'){setTimeout(showWin,500);return;}
+ const q=document.createElement('p');q.innerHTML='<b>Choose the correct past tense:</b>';sceneEl.appendChild(q);
+ const choices=document.createElement('div');choices.id='choices';
+ n.choices.forEach((c,i)=>{const b=document.createElement('button');b.className='choice';b.dataset.choice=String(i);b.innerHTML=`<span class="letter">${String.fromCharCode(65+i)}</span><span>${c.text}</span>`;b.addEventListener('click',()=>choose(i,b));choices.appendChild(b);});
+ sceneEl.appendChild(choices);
+ $('fill').style.width=(clues/4*100)+'%';$('clues').textContent=clues;
+ $('feedback').textContent='Pick the correct sentence!';$('feedback').style.color='#5542b8';
+ hoverName='';hoverAt=0;hoverLocked=false;
+}
+function choose(i,button){
+ if(processing||current==='solved')return;
+ const c=nodes[current].choices[i];if(!c)return;
+ if(c.correct){
+   processing=true;score+=10;clues=Math.min(4,clues+1);$('score').textContent=score;$('clues').textContent=clues;
+   button.classList.add('correct');$('feedback').textContent='Correct! Clue unlocked! 🔓';$('feedback').style.color='#15803d';
+   $('fill').style.width=(clues/4*100)+'%';
+   setTimeout(()=>{processing=false;renderNode(c.next);},900);
+ }else{
+   score=Math.max(0,score-1);$('score').textContent=score;button.classList.add('wrong');
+   $('feedback').textContent='Funny dead end! 😅';$('feedback').style.color='#c0263d';
+   const n=nodes[current];const old=sceneEl.querySelector('.dead-end');if(old)old.remove();
+   const dead=document.createElement('div');dead.className='dead-end';dead.style.cssText='margin-top:12px;padding:13px;border:3px dashed #f09aa5;border-radius:15px;background:#fff0f1;width:100%;';
+   dead.innerHTML=`<div style="font-size:32px">🌀🙈</div><h2 style="color:#c0263d">DEAD END!</h2><p>${c.dead}</p><p><b>Correct sentence:</b> ${c.fix}</p>`;
+   const retry=document.createElement('button');retry.textContent='↩ Try Again';retry.style.background='#5542b8';retry.addEventListener('click',()=>{dead.remove();document.querySelectorAll('.choice').forEach(b=>b.classList.remove('wrong'));$('feedback').textContent='Try the correct past tense!';});dead.appendChild(retry);sceneEl.appendChild(dead);
+ }
+}
+function showWin(){$('end').classList.remove('hide');$('end-emoji').textContent='🏆💎';$('end-title').textContent='CASE SOLVED!';$('end-text').textContent='Fantastic detective work! You followed the true clue path and practised irregular past tense verbs.';$('final-score').textContent=score;}
+function restart(){score=0;clues=0;$('score').textContent='0';$('clues').textContent='0';$('end').classList.add('hide');renderNode('intro');}
+$('start').addEventListener('click',async()=>{$('intro').classList.add('hide');renderNode('intro');await setupCamera();});
+$('again').addEventListener('click',()=>{restart();});
+$('full').addEventListener('click',async()=>{try{if(!document.fullscreenElement)await $('app').requestFullscreen();else await document.exitFullscreen();}catch(e){$('feedback').textContent='Use your browser fullscreen button.';}});
+async function setupCamera(){
+ try{
+  if(!navigator.mediaDevices?.getUserMedia)throw Error('Camera requires HTTPS or localhost.');
+  if(!window.Hands)throw Error('MediaPipe did not load. Check your internet connection.');
+  hands=new window.Hands({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`});
+  hands.setOptions({maxNumHands:1,modelComplexity:1,minDetectionConfidence:.65,minTrackingConfidence:.6});
+  hands.onResults(onResults);
+  stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}},audio:false});
+  video.srcObject=stream;await video.play();$('camera-status').textContent='Camera ready! Point at a choice and hold it.';
+  const loop=async()=>{if(!stream)return;if(video.readyState>=2&&!processing){try{await hands.send({image:video});}catch(e){console.warn(e);}}raf=requestAnimationFrame(loop);};loop();
+ }catch(e){console.warn(e);$('camera-status').textContent='Camera unavailable: '+e.message+' Click answers to keep playing.';}
+}
+function onResults(res){
+ const w=hc.width=Math.max(1,Math.round(hc.clientWidth*devicePixelRatio)),h=hc.height=Math.max(1,Math.round(hc.clientHeight*devicePixelRatio));ctx.clearRect(0,0,w,h);
+ const lm=res.multiHandLandmarks?.[0];
+ if(!lm){pointer.style.display='none';hoverName='';hoverAt=0;$('camera-status').textContent='Show one hand in the camera view.';return;}
+ if(window.drawConnectors&&window.HAND_CONNECTIONS){window.drawConnectors(ctx,lm,window.HAND_CONNECTIONS,{color:'#86efac',lineWidth:3});window.drawLandmarks(ctx,lm,{color:'#ffd166',lineWidth:1,radius:3});}
+ const x=innerWidth*(1-lm[8].x),y=innerHeight*lm[8].y;pointer.style.display='block';pointer.style.left=x+'px';pointer.style.top=y+'px';
+ $('camera-status').textContent='Hand detected! Point at an answer.';
+ const el=document.elementFromPoint(x,y),btn=el?.closest('.choice');
+ document.querySelectorAll('.choice').forEach(b=>{if(b!==btn)b.style.outline='';});
+ if(btn&&!processing&&!hoverLocked){
+  btn.style.outline='4px solid #ffd166';const id=current+':'+btn.dataset.choice;
+  if(hoverName!==id){hoverName=id;hoverAt=Date.now();}
+  if(Date.now()-hoverAt>800){hoverLocked=true;choose(Number(btn.dataset.choice),btn);setTimeout(()=>{hoverLocked=false;hoverName='';},1300);}
+ }else if(!btn){hoverName='';hoverAt=0;}
+}
+function stop(){if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}if(hands){hands.close();hands=null;}if(raf)cancelAnimationFrame(raf);}
+window.addEventListener('beforeunload',stop);
+
+// Three.js animated floating detective-themed shapes.
+let renderer,threeScene,cam,meshes=[];
+function initThree(){
+ const canvas=$('bg');renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));resize();
+ threeScene=new THREE.Scene();cam=new THREE.PerspectiveCamera(50,innerWidth/innerHeight,.1,100);cam.position.z=15;
+ const defs=[new THREE.IcosahedronGeometry(.38),new THREE.TorusGeometry(.35,.11,8,20),new THREE.OctahedronGeometry(.4),new THREE.SphereGeometry(.28,16,12)];
+ const colors=[0xffd166,0x8bd3ff,0xb9a7ff,0x9ae6b4,0xffa7b7];
+ for(let i=0;i<24;i++){const m=new THREE.Mesh(defs[i%defs.length],new THREE.MeshStandardMaterial({color:colors[i%colors.length],roughness:.65}));m.position.set((Math.random()-.5)*22,(Math.random()-.5)*13,-2-Math.random()*6);m.userData={s:.002+Math.random()*.006};threeScene.add(m);meshes.push(m);}
+ threeScene.add(new THREE.AmbientLight(0xffffff,1.5));const light=new THREE.DirectionalLight(0xffffff,2);light.position.set(4,8,10);threeScene.add(light);animate();
+}
+function resize(){if(!renderer)return;renderer.setSize(innerWidth,innerHeight);if(cam){cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();}}
+function animate(){requestAnimationFrame(animate);meshes.forEach((m,i)=>{m.rotation.x+=m.userData.s;m.rotation.y+=m.userData.s*.7;m.position.y+=Math.sin(Date.now()*.0005+i)*.001;});renderer.render(threeScene,cam);}
+window.addEventListener('resize',resize);initThree();renderNode('intro');
+</script>
+</body></html>
